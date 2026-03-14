@@ -48,11 +48,11 @@ A hyperparameter sweep script explores a predefined grid. Autoresearch explores 
 │  2. Loop (forever):                         │
 │     plan → edit → commit → run → measure    │
 │         ↓               ↓                   │
-│     improved?        equal/worse?            │
+│     improved?        equal/worse?           │
 │         ↓               ↓                   │
-│       keep            revert                 │
-│     (branch           (git reset             │
-│      advances)         --hard HEAD~1)        │
+│       keep            revert                │
+│     (branch           (git reset            │
+│      advances)         --hard HEAD~1)       │
 ├─────────────────────────────────────────────┤
 │  3. results.tsv tracks everything           │
 └─────────────────────────────────────────────┘
@@ -64,34 +64,18 @@ The agent works on a dedicated `autoresearch/<tag>` branch. The branch HEAD is a
 
 ## Installation
 
-### Quick install (npx)
-
-```bash
-npx skills add chrisliu298/autoresearch
-```
-
-This installs the skill for all supported agents (Claude Code, Codex) using the [skills CLI](https://github.com/vercel-labs/skills).
-
-### Manual install (curl)
+Clone into your agent's skills directory:
 
 **Claude Code:**
 
 ```bash
-mkdir -p ~/.claude/skills/autoresearch/references
-curl -sL https://raw.githubusercontent.com/chrisliu298/autoresearch/main/SKILL.md \
-  -o ~/.claude/skills/autoresearch/SKILL.md
-curl -sL https://raw.githubusercontent.com/chrisliu298/autoresearch/main/references/program.md \
-  -o ~/.claude/skills/autoresearch/references/program.md
+git clone https://github.com/chrisliu298/autoresearch.git ~/.claude/skills/autoresearch
 ```
 
 **Codex:**
 
 ```bash
-mkdir -p ~/.codex/skills/autoresearch/references
-curl -sL https://raw.githubusercontent.com/chrisliu298/autoresearch/main/SKILL.md \
-  -o ~/.codex/skills/autoresearch/SKILL.md
-curl -sL https://raw.githubusercontent.com/chrisliu298/autoresearch/main/references/program.md \
-  -o ~/.codex/skills/autoresearch/references/program.md
+git clone https://github.com/chrisliu298/autoresearch.git ~/.codex/skills/autoresearch
 ```
 
 ---
