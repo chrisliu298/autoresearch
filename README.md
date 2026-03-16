@@ -106,8 +106,21 @@ The agent will:
 | Metric extraction | `grep "^val_bpb:" run.log` |
 | Files in scope | `train.py` (everything else read-only) |
 | Constraints | No new deps, don't modify eval code |
+| Guard (optional) | `npm test`, `pytest` — must always pass |
 
 The agent auto-detects what it can from the repo and proposes defaults.
+
+### Guard
+
+The guard is an optional safety net — a command that must always pass alongside metric improvements. It prevents optimizing a metric while accidentally breaking existing behavior.
+
+```
+Metric: inference latency (lower is better)
+Command: python bench.py
+Guard: pytest tests/
+```
+
+If the metric improves but the guard fails, the agent reworks the implementation (up to 2 attempts) to avoid the regression. Guard/test files are never modified.
 
 ---
 
@@ -122,10 +135,13 @@ Each iteration follows a strict sequence:
 5. **Run** — `command > run.log 2>&1` (output stays out of agent context)
 6. **Extract** — parse the metric from `run.log`
 7. **Record** — append to `results.tsv`
-8. **Decide**:
-   - **Improved** — keep the commit, branch advances
+8. **Guard** — if defined, verify existing behavior still passes
+9. **Decide**:
+   - **Improved** (and guard passed) — keep the commit, branch advances
    - **Equal or worse** — `git reset --hard HEAD~1`
+   - **Improved but guard failed** — rework or discard
    - **Crash** — fix if trivial, otherwise revert and move on
+10. **Report** — every 5 iterations, print a progress summary
 
 ### Simplicity criterion
 
@@ -139,6 +155,17 @@ Not all improvements are worth keeping:
 ### When stuck
 
 The agent does not give up. It re-reads source files, looks for patterns in past experiments, combines near-misses, tries radical structural changes, and reasons about execution bottlenecks. As a last resort, it rewinds to an earlier successful commit and tries a different direction.
+
+### Bounded loops
+
+By default, autoresearch loops forever. Use `/loop N /autoresearch` to run exactly N iterations then stop with a summary:
+
+```
+=== Autoresearch Complete (25 iterations) ===
+Baseline: 0.9979 → Best: 0.9712 (-0.0267)
+Keeps: 8 | Discards: 15 | Crashes: 2
+Best experiment: #14 — switch to rotary embeddings
+```
 
 ### Timeout
 
